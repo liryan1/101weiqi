@@ -1,4 +1,5 @@
-from go import *
+from go import get_empty_board, convert_coordinate, Go_game, EMPTY, BLACK, WHITE
+
 
 def flip(s: str):
     x, y = s[0], s[1]
@@ -51,7 +52,7 @@ def get_solution_distance(black: list[str], white: list[str], solution: list[str
     max_distance = 10 ** 8
     for move in solution:
         [x, y] = convert_coordinate(move)
-        new_board = go.play_move([y, x])
+        new_board = go.play_move((y, x))
         if new_board == board:
             return max_distance
         board = new_board
@@ -60,7 +61,5 @@ def get_solution_distance(black: list[str], white: list[str], solution: list[str
             distance += (ord(cx) - ord(sx)) + (ord(cy) - ord(sy))
         for sy, sx in white:
             distance += (ord(cx) - ord(sx)) + (ord(cy) - ord(sy))
-    
+
     return abs(distance)
-
-
