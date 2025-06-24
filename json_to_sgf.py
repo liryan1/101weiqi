@@ -1,13 +1,11 @@
 import json
-from merge_variations import merge_variations, variations_to_sgf
+from variations import merge_variations, variations_to_sgf
 from helpers import get_solution_distance, make_fat, is_fat, to_lower_left
 
 BOOK = "tian_long_tu"
 input_file = "/".join(["data/json", f"{BOOK}.json"])
 output_folder = "data/sgf"
 SGF_HEADER = "GM[1]FF[4]SZ[19]"
-
-sgf_file_number = [0]
 
 
 def get_comments(key: str, rank: str) -> str:
