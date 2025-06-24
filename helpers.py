@@ -1,4 +1,4 @@
-from go import get_empty_board, convert_coordinate, Go_game, EMPTY, BLACK, WHITE
+from go import get_empty_board, convert_coordinate, Go_game, BLACK, WHITE
 
 
 def flip(s: str):
@@ -6,7 +6,7 @@ def flip(s: str):
     return chr(19 - (ord(y) - 96) + 97) + chr(19 - (ord(x) - 96) + 97)
 
 
-def to_lower_left(black, white):
+def to_lower_left(black, white) -> tuple[list[str], list[str]]:
     new_black, new_white = black, white
 
     left = 0
@@ -23,7 +23,7 @@ def to_lower_left(black, white):
             top += 1
         elif y > "j":
             bottom += 1
-    
+
     if right > left:
         new_black = [chr(19 - (ord(b[0]) - 96) + 97) + b[1] for b in new_black]
         new_white = [chr(19 - (ord(b[0]) - 96) + 97) + b[1] for b in new_white]
@@ -31,7 +31,7 @@ def to_lower_left(black, white):
     if top > bottom:
         new_black = [b[0] + chr(19 - (ord(b[1]) - 96) + 97) for b in new_black]
         new_white = [b[0] + chr(19 - (ord(b[1]) - 96) + 97) for b in new_white]
-    
+
     return (new_black, new_white)
 
 

@@ -1,8 +1,8 @@
 import json
-from itertools import cycle
+from merge_variations import merge_variations, variations_to_sgf
 from helpers import get_solution_distance, make_fat, is_fat, to_lower_left
 
-BOOK = "sample"
+BOOK = "tian_long_tu"
 input_file = "/".join(["data/json", f"{BOOK}.json"])
 output_folder = "data/sgf"
 SGF_HEADER = "GM[1]FF[4]SZ[19]"
@@ -10,59 +10,65 @@ SGF_HEADER = "GM[1]FF[4]SZ[19]"
 sgf_file_number = [0]
 
 
-def transform(black_stones, white_stones, solution):
-    """Transform the stones and solution so they match
-    """
+def get_comments(key: str, rank: str) -> str:
+    return f"C[description: {key}\nrank: {rank.rstrip("+").lower()}]"
 
+
+def transform(
+    black_stones, white_stones, all_solutions
+) -> tuple[list[str], list[str], list[list[str]]]:
+    """Transform the stones and solution so they match"""
     black_stones, white_stones = to_lower_left(black_stones, white_stones)
-    solution = to_lower_left(solution, [])[0]
+    all_solutions = [to_lower_left(solution, [])[0] for solution in all_solutions]
 
     if not is_fat(black_stones + white_stones):
         black_stones = make_fat(black_stones)
         white_stones = make_fat(white_stones)
 
-    fat_solution = make_fat(solution)
-    origin_distance = get_solution_distance(black_stones, white_stones, solution)
-    fat_distance = get_solution_distance(black_stones, white_stones, fat_solution)
-    if fat_distance < origin_distance:
-        solution = fat_solution
+    fat_solutions = [make_fat(solution) for solution in all_solutions]
+    origin_distance = sum(
+        get_solution_distance(black_stones, white_stones, solution)
+        for solution in all_solutions
+    )
+    fat_distance = sum(
+        get_solution_distance(black_stones, white_stones, fat_solution)
+        for fat_solution in fat_solutions
+    )
+    if (fat_distance) < origin_distance:
+        all_solutions = fat_solutions
 
-    return black_stones, white_stones, solution
+    return black_stones, white_stones, all_solutions
 
 
-def generate_sgf_node(problem) -> str:
+def generate_sgf_node(key, problem) -> str:
     black_stones = problem.get("Black stones", [])
     white_stones = problem.get("White stones", [])
     solution = problem.get("Solution", [])
+    all_solutions = problem.get("Other variations", [])
+    all_solutions.append(solution)
 
-    black_stones, white_stones, solution = \
-        transform(black_stones, white_stones, solution)
+    black_stones, white_stones, all_solutions = transform(
+        black_stones, white_stones, all_solutions
+    )
 
     black_stones_str = "AB" + "".join(f"[{c}]" for c in black_stones)
     white_stones_str = "AW" + "".join(f"[{c}]" for c in white_stones)
     start_player = problem.get("Start", "B")
-    comments = problem.get("Comments", "")
+    rank = problem.get("Comments", "")
 
-    root = f"(;{black_stones_str}{white_stones_str}C[{comments}]"
+    # Start with stones and comments
+    root = f"(;{black_stones_str}{white_stones_str}{get_comments(key, rank)}"
+    # Add solution variations
+    root += variations_to_sgf(merge_variations(all_solutions), start_player)
 
-    moveCycle = cycle(["B", "W"])
-    if start_player == "W":
-        next(moveCycle)
-    if solution:
-        main_line = "".join(
-            f";{next(moveCycle)}[{move}]" for move in solution
-        )
-        root += main_line
-
-    root += ")"
-    return root
+    return root + ")"
 
 
 def convert_go_problems_to_sgf(data) -> str:
     header = "GM[1]FF[4]SZ[19]"
     sgf = []
-    for problem in data.values():
-        sgf.append(generate_sgf_node(problem))
+    for key, problem in data.items():
+        sgf.append(generate_sgf_node(key, problem))
     return "(;" + header + "\n".join(sgf) + ")"
 
 
@@ -70,6 +76,7 @@ def main() -> None:
     with open(input_file, "r") as f:
         jsonProblems = json.load(f)
     print(f"Loaded {len(jsonProblems)} problems from {input_file}")
+    # print(f"Example: {jsonProblems["Problem 1"]}")
     sgf_output = convert_go_problems_to_sgf(jsonProblems)
     # print(sgf_output)
 
