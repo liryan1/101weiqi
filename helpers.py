@@ -6,19 +6,33 @@ def flip(s: str):
     return chr(19 - (ord(y) - 96) + 97) + chr(19 - (ord(x) - 96) + 97)
 
 
-def to_lower_left(coords: list[str], size: int) -> list[str]:
-    return [
-        chr(size - (ord(b[0]) - 96) + 97) + chr(size - (ord(b[1]) - 96) + 97)
-        for b in coords
-    ]
+def to_lower_left(black, white):
+    new_black, new_white = black, white
 
+    left = 0
+    right = 0
+    top = 0
+    bottom = 0
 
-def is_in_lower_left(stones: list[str]) -> bool:
-    count = 0
-    for x, y in stones:
-        if x <= "j" <= y:
-            count += 1
-    return count >= len(stones) / 2
+    for x, y in black + white:
+        if x < "j":
+            left += 1
+        elif x > "j":
+            right += 1
+        if y < "j":
+            top += 1
+        elif y > "j":
+            bottom += 1
+    
+    if right > left:
+        new_black = [chr(19 - (ord(b[0]) - 96) + 97) + b[1] for b in new_black]
+        new_white = [chr(19 - (ord(b[0]) - 96) + 97) + b[1] for b in new_white]
+
+    if top > bottom:
+        new_black = [b[0] + chr(19 - (ord(b[1]) - 96) + 97) for b in new_black]
+        new_white = [b[0] + chr(19 - (ord(b[1]) - 96) + 97) for b in new_white]
+    
+    return (new_black, new_white)
 
 
 def make_fat(stones: list[str]):

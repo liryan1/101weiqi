@@ -1,6 +1,6 @@
 import json
 from itertools import cycle
-from helpers import get_solution_distance, make_fat, is_fat, to_lower_left, is_in_lower_left
+from helpers import get_solution_distance, make_fat, is_fat, to_lower_left
 
 BOOK = "sample"
 input_file = "/".join(["data/json", f"{BOOK}.json"])
@@ -14,12 +14,8 @@ def transform(black_stones, white_stones, solution):
     """Transform the stones and solution so they match
     """
 
-    if not is_in_lower_left(black_stones + white_stones):
-        black_stones = to_lower_left(black_stones, 19)
-        white_stones = to_lower_left(white_stones, 19)
-
-    if not is_in_lower_left(solution):
-        solution = to_lower_left(solution, 19)
+    black_stones, white_stones = to_lower_left(black_stones, white_stones)
+    solution = to_lower_left(solution, [])[0]
 
     if not is_fat(black_stones + white_stones):
         black_stones = make_fat(black_stones)
